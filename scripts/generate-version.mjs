@@ -13,7 +13,7 @@ async function generateVersion() {
   try {
     // Import the manifest configuration
     const manifestModule = await import(
-      join(rootDir, 'src', 'config', 'manifest.ts')
+      join(rootDir, 'src', 'shared', 'lib', 'manifest.ts')
     );
     const manifest = manifestModule.manifest || manifestModule.default;
 

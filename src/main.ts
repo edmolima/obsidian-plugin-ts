@@ -1,59 +1,38 @@
 import { Plugin } from 'obsidian';
-import { ILogger, IPluginContext, ISettingsService } from './core/interfaces';
-import { Logger } from './core/Logger';
-import { SettingsService } from './core/SettingsService';
-import { SettingsTab } from './settings/SettingsTab';
-import { registerCommands } from './commands';
+import { ExampleModal } from './features/example-modal';
+import { SettingsTab } from './features/settings';
+import { DEFAULT_SETTINGS, Storage, type PluginSettings } from './shared/lib/storage';
+import './shared/styles/globals.css';
 
-/**
- * Main plugin class with Dependency Injection
- * Follows SOLID principles:
- * - Single Responsibility: Orchestrates plugin lifecycle
- * - Dependency Inversion: Depends on abstractions (interfaces)
- * - Interface Segregation: Uses specific interfaces
- */
 export default class MyPlugin extends Plugin {
-  private readonly logger: ILogger;
-  private readonly settingsService: ISettingsService;
-  private readonly context: IPluginContext;
+  storage!: Storage<PluginSettings>;
 
-  constructor(app: any, manifest: any) {
-    super(app, manifest);
+  async onload() {
+    console.log('Loading plugin');
 
-    // Initialize dependencies
-    this.logger = new Logger(this.manifest.name);
-    this.settingsService = new SettingsService(this, this.logger);
+    // Initialize storage with default settings
+    this.storage = new Storage(this, DEFAULT_SETTINGS);
+    await this.storage.loadSettings();
 
-    // Create plugin context for dependency injection
-    this.context = {
-      app: this.app,
-      plugin: this,
-      logger: this.logger,
-      settingsService: this.settingsService,
-    };
-  }
+    // Add settings tab
+    this.addSettingTab(new SettingsTab(this.app, this, this.storage));
 
-  async onload(): Promise<void> {
-    this.logger.log('Loading plugin');
-
-    // Load settings
-    await this.settingsService.loadSettings();
-
-    // Register commands with injected dependencies
-    registerCommands(this.context);
-
-    // Add settings tab with injected dependencies
-    this.addSettingTab(new SettingsTab(this.app, this, this.settingsService));
-
-    // Add ribbon icon (optional)
-    this.addRibbonIcon('dice', 'Example Plugin', () => {
-      this.logger.log('Ribbon icon clicked');
+    // Add commands
+    this.addCommand({
+      id: 'open-example-modal',
+      name: 'Open Example Modal',
+      callback: () => {
+        new ExampleModal(this.app).open();
+      },
     });
 
-    this.logger.log('Plugin loaded');
+    // Add ribbon icon
+    this.addRibbonIcon('dice', 'Example Plugin', () => {
+      new ExampleModal(this.app).open();
+    });
   }
 
-  onunload(): void {
-    this.logger.log('Unloading plugin');
+  onunload() {
+    console.log('Unloading plugin');
   }
 }

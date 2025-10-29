@@ -13,7 +13,7 @@ const targetVersion = process.env.npm_package_version;
  * This updates the TypeScript source file
  */
 async function updateManifestVersion() {
-  const manifestPath = join(rootDir, 'src', 'config', 'manifest.ts');
+  const manifestPath = join(rootDir, 'src', 'shared', 'lib', 'manifest.ts');
   let manifestContent = readFileSync(manifestPath, 'utf8');
 
   // Import to get minAppVersion

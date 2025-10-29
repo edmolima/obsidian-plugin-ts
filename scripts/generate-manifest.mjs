@@ -1,6 +1,6 @@
 import { writeFileSync } from 'fs';
-import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -12,11 +12,21 @@ const rootDir = join(__dirname, '..');
  */
 async function generateManifest() {
   try {
-    // Import the manifest configuration
-    const manifestModule = await import(
-      join(rootDir, 'src', 'config', 'manifest.ts')
-    );
-    const manifest = manifestModule.manifest || manifestModule.default;
+    // Prefer a JSON manifest source if present (works in dev without TS loader)
+    const jsonPath = join(rootDir, 'src', 'shared', 'lib', 'manifest.json');
+    let manifest;
+
+    try {
+      // Try reading the JSON manifest first
+      const content = await import(`file://${jsonPath}`);
+      manifest = content.default || content;
+    } catch (e) {
+      // Fallback to importing the TypeScript manifest (requires TS loader)
+      const manifestModule = await import(
+        join(rootDir, 'src', 'shared', 'lib', 'manifest.ts')
+      );
+      manifest = manifestModule.manifest || manifestModule.default;
+    }
 
     // Write to dist/manifest.json
     const manifestPath = join(rootDir, 'dist', 'manifest.json');
