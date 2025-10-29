@@ -1,0 +1,10 @@
+/* Add your custom styles here */
+
+/* Example: Style for modal content */
+.modal.example-modal {
+  padding: 20px;
+}
+
+.modal.example-modal h2 {
+  margin-top: 0;
+}
