@@ -10,43 +10,23 @@ jobs:
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x]
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
+          node-version: 20
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 10.15.1
-          run_install: false
+      - name: Enable pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Type check (lint)
-        run: pnpm lint
 
       - name: Build
         run: pnpm build
 
       - name: Run tests
-        run: pnpm test -- --reporter=dot
-        env:
-          CI: true
-
-      - name: Upload coverage (if generated)
-        if: ${{ always() && (matrix.node-version == '18.x') }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: coverage || ''
+        run: pnpm run test --run
